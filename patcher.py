@@ -8,22 +8,21 @@ def ascii_to_hex(input_string):
     hex_string = input_string.encode().hex()
     return hex_string
 
-def replace_bytes_in_file(file_path, offset, search_bytes, replace_bytes):
-    with open(file_path, 'rb+') as file:
-        file.seek(offset)
+def replace_hex_bytes_at_offset(file_path, offset, replace_hex):
+    with open(file_path, 'rb') as file:
+        file_data = file.read()
 
-        # Read the content at the specified offset
-        data = file.read(len(search_bytes))
+    replace_bytes = bytes.fromhex(replace_hex)
 
-        # Check if the bytes at the specified offset match the search_bytes
-        if data == search_bytes:
-            # Move the file pointer back to the beginning of the replacement area
-            file.seek(offset)
+    # Ensure the offset is within the file size
+    if offset >= 0 and offset + len(replace_bytes) <= len(file_data):
+        # Replace the hex bytes at the specified offset with the new hex bytes
+        file_data = file_data[:offset] + replace_bytes + file_data[offset + len(replace_bytes):]
 
-            # Replace the bytes with the new ones
-            file.write(replace_bytes)
-        else:
-            pass
+        with open(file_path, 'wb') as file:
+            file.write(file_data)
+    else:
+        print("Invalid offset or replacement size.")
 
 def replace_hex_bytes(file_path, search_hex, replace_hex):
     with open(file_path, 'rb') as file:
@@ -113,7 +112,6 @@ def patch_ip(ip):
 def patch_sunset_time():
     file_path = './data/ipa/Payload/minecraftearthtf.app/minecraftearthtf'
     offset = 0x1129080
-    search_bytes = b'\xEA\x05\x00\x54'
-    replace_bytes = b'\xE1\x05\x00\x54'
+    bytes_to_replace_with = 'E1050054'
 
-    replace_bytes_in_file(file_path, offset, search_bytes, replace_bytes)
+    replace_hex_bytes_at_offset(file_path, offset, bytes_to_replace_with)
